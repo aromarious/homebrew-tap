@@ -1,20 +1,22 @@
 # homebrew-tap
 
-いまのところ、自分で作った小さなスクリプトを置いています。
+[日本語readme](readme.ja.md)
 
-## 使い方
+Currently, I have placed some small scripts that I created myself.
 
-0. このリポジトリを tap として登録する。`brew tap aromarious/tap`
-1. `brew install <formula>` でインストールする
+## Usage
 
-## インストールできる Formula
+0. Add this repository as a tap: `brew tap aromarious/tap`
+1. Install with `brew install <formula>`
+
+## Available Formulae
 
 ### [`display-rotate`](https://github.com/aromarious/display-rotate)
 
-指定した画面を 90 度回転するコマンド。thanks to [`displayplacer`](https://github.com/jakehilborn/displayplacer)
+A command-line tool to rotate the specified display by 90 degrees. I use BetterTouchTool to assign 🌐R for easily switching the orientation of my mobile display. Thanks to [`displayplacer`](https://github.com/jakehilborn/displayplacer)
 
 ### [`clear-notifications`](https://github.com/aromarious/clear-notifications)
 
-Mac の通知を一括消去するスクリプト。macOS Sequoia 15.2 (24C101) にて動作確認済み。
+A command-line tool to clear all notifications on Mac. I also use BetterTouchTool to assign ⇧🌐N for this. Tested on macOS Sequoia 15.2 (24C101).
 
-注）Applescript で書いてあるためいつまで動くかわかりません。
+**Note**: As it is written in AppleScript, its compatibility in future macOS versions is uncertain.
