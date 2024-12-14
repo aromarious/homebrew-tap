@@ -1,0 +1,97 @@
+name: Update brew
+on:
+  repository_dispatch:
+    types: [update-brew] # with client_payload.packages
+  workflow_dispatch:
+    inputs:
+      formula:
+        description: 'update target formula'
+        required: true
+        default: 'test-product'
+      description:
+        description: 'formula description'
+        required: true
+        default: 'test product decsciption'
+      homepage:
+        description: 'homepage'
+        required: true
+        default: 'https://github.com/aromarious/display-rotate'
+      url:
+        description: 'Download URL'
+        required: true
+        default: 'https://github.com/aromarious/display-rotate/archive/refs/tags/v1.0.4.tar.gz'
+      sha256:
+        description: 'checksum'
+        required: true
+        default: '34144d661893472763dc48e617a1fe2ad4407a8aa1c68b1b2832bae7310f6118'
+      version:
+        description: 'version'
+        required: true
+        default: 'v1.0.4'
+      license:
+        description: 'license'
+        required: true
+        default: 'ISC'
+jobs:
+  update-brew:
+    runs-on: macos-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          architecture: arm64
+          node-version: 20
+
+      - name: Install Brew
+        uses: Homebrew/actions/setup-homebrew@master
+      
+      - name: Update formula
+        run: |
+          FORMULA="${{ github.event.client_payload.formula || github.event.inputs.formula }}"
+          DESCRIPTION="${{ github.event.client_payload.description || github.event.inputs.description }}"
+          HOMEPAGE="${{ github.event.client_payload.homepage || github.event.inputs.homepage }}"
+          URL="${{ github.event.client_payload.url || github.event.inputs.url }}"
+          SHA256="${{ github.event.client_payload.sha256 || github.event.inputs.sha256 }}"
+          VERSION="${{ github.event.client_payload.version || github.event.inputs.version }}"
+          LICENSE="${{ github.event.client_payload.license || github.event.inputs.license }}"
+          ./scripts/update.js "$FORMULA" "$DESCRIPTION" "$HOMEPAGE" "$URL" "$SHA256" "$VERSION" "$LICENSE"
+
+      - name: Install Formula
+        run: brew install --formula ./Formula/${{ github.event.client_payload.formula || github.event.inputs.formula }}.rb
+
+      - name: Run Formula Tests
+        run: brew test ${{ github.event.client_payload.formula || github.event.inputs.formula }}
+        
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          commit-message: 'Update packages for ${{ github.event.client_payload.formula || github.event.inputs.formula }} for ${{ github.event.client_payload.version || github.event.inputs.version }}'
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          signoff: false
+          branch: feature/update-package
+          branch-suffix: timestamp
+          delete-branch: true
+          title: '${{ github.event.client_payload.formula || github.event.inputs.formula }} update for ${{ github.event.client_payload.version || github.event.inputs.version }}'
+          body: |
+            @${{ github.actor }}
+            ```
+            ${{ github.event.client_payload.formula || github.event.inputs.formula }} update for ${{ github.event.client_payload.version || github.event.inputs.version }}
+            - **Formula:** ${{ github.event.client_payload.formula || github.event.inputs.formula }}
+            - **Description:** ${{ github.event.client_payload.description || github.event.inputs.description }}
+            - **Homepage:** ${{ github.event.client_payload.homepage || github.event.inputs.homepage }}
+            - **URL:** ${{ github.event.client_payload.url || github.event.inputs.url }}
+            - **SHA256:** ${{ github.event.client_payload.sha256 || github.event.inputs.sha256 }}
+            - **Version:** ${{ github.event.client_payload.version || github.event.inputs.version }}
+            - **License:** ${{ github.event.client_payload.license || github.event.inputs.license }}
+            ```
+      - name: Check Pull Request
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"

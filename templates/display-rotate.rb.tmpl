@@ -1,0 +1,24 @@
+class DisplayRotate < Formula
+  desc "{{ description }}"
+  homepage "{{ homepage }}"
+  url "{{ url }}"
+  sha256 "{{ sha256 }}"
+  version "{{ version }}"
+  license "{{ license }}"
+
+  depends_on "node"
+  depends_on "displayplacer"
+
+  def install
+    ohai "Building {{ formula }}..."
+    system "npm", "install"
+    system "npm", "run", "build"
+    ohai "Installing {{ formula }}..."
+    libexec.install "package.json", "package-lock.json", "bin", "dist"
+    bin.install_symlink libexec/"bin/{{ formula }}"
+  end
+
+  test do
+    system "#{bin}/display-rotate", "--version"
+  end
+end
